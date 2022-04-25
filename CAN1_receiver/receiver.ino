@@ -1,27 +1,30 @@
 #include <SPI.h>
-#include <mcp2515.h>
+#include <mcp_can.h>
 
-struct can_frame canMsg;
-MCP2515 mcp2515(10); // SPI CS pin 10
+MCP_CAN CAN(10);
 
-void setup()
-{
-    SPI.begin(); // SPI 통신 시작
-    Serial.begin(9600); // 시리얼 통신 9600 Baud rate
-    mcp2515.reset();
-    // CAN 통신 속도 500KBPS, 클락 속도 8MHZ
-    mcp2515.setBitrate(CAN_500KBPS,MCP_8MHZ);
-    mcp2515.setNormalMode(); // CAN 노말 모드
+void setup(){
+    Serial.begin(9600);
+    while(CAN_OK != CAN.begin(CAN_500KBPS,MCP_8MHz)){
+        Serial.println("CAN BUS init failed!");
+        delay(100);
+    }
+    Serial.println("CAN BUS init Success!");
 }
 
-void loop()
-{
-	if((mcp2515.readMessage(&canMsg) == MCP2515::ERROR_OK) && canMsg.can_id == 0x036){
-        Serial.print("Getal 1: ");
-        Serial.print(canMsg.data[0]);
-        Serial.print(", Getal 2: ");
-        Serial.print(canMsg.data[1]);
-        Serial.print(", Getal 3: ");
-        Serial.print(canMsg.data[2]);
+void loop(){
+    unsigned char len = 0;
+    unsigned char buf[8];
+
+    if(CAN_MSGAVAIL == CAN.checkReceive()){
+        CAN.readMsgBuf(&len,buf);
+        unsigned long canId = CAN.getCanId();
+
+        Serial.print("\nData from ID: 0x");
+        Serial.println(canId,HEX);
+        for(int i=0;i<len;i++){
+            Serial.print(buf[i]);
+            Serial.print("\t");
+        }
     }
 }

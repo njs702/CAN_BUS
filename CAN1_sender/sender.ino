@@ -1,31 +1,20 @@
 #include <SPI.h>
-#include <mcp2515.h>
+#include <mcp_can.h>
 
-struct can_frame canMsg;
-MCP2515 mcp2515(10);
+MCP_CAN CAN(10);
 
-void setup()
-{   
-    SPI.begin(); // Begin SPI communication
-	mcp2515.reset();
-    // CAN 통신 속도를 500KBPS로, 클락 속도를 8MHZ로 맞춘다
-    mcp2515.setBitrate(CAN_500KBPS,MCP_8MHZ);
-    mcp2515.setNormalMode();
+void setup(){
+    Serial.begin(9600);
+    while(CAN_OK != CAN.begin(CAN_500KBPS,MCP_8MHz)){
+        Serial.println("CAN BUS init failed!");
+        delay(100);
+    }
+    Serial.println("CAN BUS init Success!");
 }
 
-void loop()
-{
-    canMsg.can_id = 0x036; // CAN id = 0x036
-    canMsg.can_dlc = 8; // CAN data length = 8
-    canMsg.data[0] = 125; // value in [0] (max=255)
-    canMsg.data[1] = 203; // value in [1] (max=255)
-    canMsg.data[2] = 255; // value in [2] (max=255)
-    canMsg.data[3] = 0x00; // 나머지는 모두 0
-    canMsg.data[4] = 0x00; 
-    canMsg.data[5] = 0x00; 
-    canMsg.data[6] = 0x00; 
-    canMsg.data[7] = 0x00; 
-    
-    mcp2515.sendMessage(&canMsg); // CAN 메시지 전송
+void loop(){
+    Serial.println("Sending");
+    unsigned char stmp[8] = {0,1,2,3,4,5,6,7};
+    CAN.sendMsgBuf(0x11,0,8,stmp);
     delay(1000);
 }
