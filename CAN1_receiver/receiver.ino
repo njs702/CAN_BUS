@@ -16,8 +16,12 @@ void setup()
 
 void loop()
 {
-	digitalWrite(LED_BUILTIN,HIGH);
-    delay(1000);
-    digitalWrite(LED_BUILTIN,LOW);
-    delay(1000);
+	if((mcp2515.readMessage(&canMsg) == MCP2515::ERROR_OK) && canMsg.can_id == 0x036){
+        Serial.print("Getal 1: ");
+        Serial.print(canMsg.data[0]);
+        Serial.print(", Getal 2: ");
+        Serial.print(canMsg.data[1]);
+        Serial.print(", Getal 3: ");
+        Serial.print(canMsg.data[2]);
+    }
 }
