@@ -61,11 +61,34 @@ CAN 통신은 전체 노드를 제어하는 Master가 없기 때문에 데이터
 
 <p align="center"><img src="./img/can_standard.PNG"></p>
 
+* IDE 비트가 0이면, 프레임이 Standard Frame Format
+* RTR 비트 : 데이터 프레임과 리모트 프레임을 구분하는 비트
+* Arbittration Field는 ID 11비트와 RTR 비트까지의 필드 영역이다.
+* Bitwise Arbitration 단계에서 RTR 비트까지 포함해 우선순위를 결정한다.
+* 같은 ID를 가지고 있는 Frame이 버스에서 충돌난다면, RTR 비트가 dominant(0)인 Frame이 우위를 가지고 메시지를 전송한다.
+
 ### 4.2 Extended CAN message format
+과거 Standrad Frame의 11 Bit로 충분한 양을 담을 수 있던 것과 달리, 시대가 발전함에 따라 더 많은 양을 처리해야 할 상황이 오게 되었다. 총 29 Bit 길이의 ID를 사용해서 더 많은 범위를 처리할 수 있다.
 
 <p align="center"><img src="./img/can_extended.PNG"></p>
+
+* SRR(Substitute Remote Request) : Standard Frame의 RTR을 대신한다
+* IDE(Identifier Extension Bit) : Extended id를 의미한다
 
 ### 4.3 Remote CAN message format
 Remote Frame은 데이터 필드를 가지고 있지 않은 프레임이다. 메시지를 제대로 수신하지 못해서 해당 메시지의 재전송이 필요한 경우 전송되는 프레임이다. 모든 데이터를 정확히 수신해야 하거나, 대용량의 Data가 송수신되는 비행기 혹은 선박 업계에서 사용된다.
 
+<p align="center"><img src="./img/can_remote.png"></p>
+
+* 다른 노드로부터 데이터 전송 요구를 알리는 프레임
+* 데이터 요구를 나타내는 RTR 비트가 'r'로 설정되어 있으며 Data Field가 없다
+
 ### 4.4 Error CAN message format
+
+<p align="center"><img src="./img/can_error.png"></p>
+
+* CAN에서 정의된 Error가 감지되면 전송
+* Active Error Flag : 6개의 연속된 Dominant Bits
+* Passive Error Flag : 6개의 연속된 Recessive Bits
+* Superposition : Error Frame의 Bit Stuffing 오류가 감지된 다른 Node들의 Error Frame 전송으로 발생
+* Error Delimiter : 8개의 연속된 Recessive Bits
