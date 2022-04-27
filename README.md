@@ -43,5 +43,29 @@ CAN 인터페이스는 여러 개의 모듈을 처리할 수 있게 해주고, �
 * 따라서 하나의 선에 에러가 나더라도 다른 선에 의해 정상적인 통신이 가능하다.
 
 <p align="center"><img src="./img/can_module.png"></p>
+
 CAN 통신은 전체 노드를 제어하는 Master가 없기 때문에 데이터에 쉽게 접근할 수 있다. ID값을 통해 불필요한 메시지를 무시하고 자신에게 필요한 메시지만 수신한다. 다중 노드가 동시에 버스에 메시지를 전송하려는 경우, ID값이 가장 낮은 정보를 가진 노드가 최 우선으로 버스에 접근하게 된다.
 
+## 4. CAN Data Frame Format
+
+<p align="center"><img src="./img/can_data_frame.png"></p>
+
+* Arbitration Field : 메시지 ID가 있는 필드
+* Control Field : 메시지 제어에 필요한 비트 값을 가지고 있는 필드, IDE 비트 값을 통해 프레임이 Standard Frame인지 Extended Frame인지 확인하고, DLC 비트를 통해 메시지 데이터의 길이를 알려준다
+* Data Field : 실질적인 통신내용인 데이터가 있는 필드이다. CAN 메시지의 경우, 최대 8 Byte까지의 데이터를 메시지에 실을 수 있다
+* Check Field : 변형된 데이터가 없는지 확인하는 CRC 값들이 있는 필드
+* ACK Field : 메시지를 잘 수신했다는 것을 버스에 있는 다른 노드들에게 알려주는 값이 있는 필드
+
+### 4.1 Standard CAN message format
+메시지 ID, 식별자의 길이가 11 Bit인 형식이다. CAN 통신에서 메시지 ID는 메시지 고유의 이름일 뿐만 아니라, CAN 버스에서 2개 이상의 메시지 Collision이 일어날 경우 중재에 사용되는 우선순위의 역할도 가지고 있다. 과거 11 Bit로 충분한 크기의 범위였지만, 시간이 흐르고 메시지가 더 많이 필요해지게 되어 29 Bit의 메시지 ID를 갖고 있는 Extended Frame이 생기게 되었다.
+
+<p align="center"><img src="./img/can_standard.PNG"></p>
+
+### 4.2 Extended CAN message format
+
+<p align="center"><img src="./img/can_extended.PNG"></p>
+
+### 4.3 Remote CAN message format
+Remote Frame은 데이터 필드를 가지고 있지 않은 프레임이다. 메시지를 제대로 수신하지 못해서 해당 메시지의 재전송이 필요한 경우 전송되는 프레임이다. 모든 데이터를 정확히 수신해야 하거나, 대용량의 Data가 송수신되는 비행기 혹은 선박 업계에서 사용된다.
+
+### 4.4 Error CAN message format
