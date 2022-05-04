@@ -92,3 +92,33 @@ Remote Frame은 데이터 필드를 가지고 있지 않은 프레임이다. 메
 * Passive Error Flag : 6개의 연속된 Recessive Bits
 * Superposition : Error Frame의 Bit Stuffing 오류가 감지된 다른 Node들의 Error Frame 전송으로 발생
 * Error Delimiter : 8개의 연속된 Recessive Bits
+
+## 5. MCP2515 CAN Bus Controller Module
+
+### 5.1 MCP2515 간단한 특징
+MCP2515 CAN Bus Controller Module은 CAN protocol version 2.0B을 지원하는 간단한 모듈이다. 최대 1Mbps의 속도로 사용이 가능하고, 1:1 통신 시스템을 구축하려면 2개의 CAN Bus Module이 필요하다.
+
+<p align="center"><img src="./img/MCP2515_MODULE.jpg"></p>
+
+### 5.2 Schemetic of MCP2515
+
+<p align="center"><img src="./img/MCP2515_SCHEMETIC.jpg"></p>
+
+MCP2515 CAN Bus Module에는 두 개의 IC 칩이 존재한다. MCP2515와 TJA1050 칩이다. 
+
+#### 5.2.1 MCP2515
+MCP2515는 메인 컨트롤러이며, CAN Module, Control Logic, SPI Block으로 구성되어 있다.
+
+>* CAN Module : CAN Bus에서 메시지를 전송하고, 수신하는 것을 담당한다.
+>* Control Logic : 모든 블록과 마주하며 MCP2515가 설정하고 동작하는 것들을 제어한다.
+>* SPI Block : SPI 통신을 위한 인터페이스를 컨트롤한다.
+
+#### 5.2.2 TJA1050
+MCP2515 CAN Controller와 물리적 CAN Bus 사이의 인터페이스처럼 동작한다. TJA1050 IC 칩은 컨트롤러로부터 데이터를 받아서 Bus에 제공한다.
+
+<p align="center"><img src="./img/MCP2515_SCHEMETIC2.jpg"></p>
+
+5.3 회로도 구성하기(with Arduino UNO)
+CAN Controller IC 칩이 MCU와 SPI 통신을 사용해 연결되기 떄문에, 아두이노의 SCK, SI, SO, CS핀을 연결해 주어야 한다.
+
+<p align="center"><img src="./img/MCP2515_CIRCUIT.jpg"></p>

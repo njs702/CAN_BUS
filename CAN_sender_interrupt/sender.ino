@@ -21,9 +21,9 @@ void CAN_int(){
     unsigned char buf[8];
 
     CAN.readMsgBuf(&len,buf); // CAN 데이터 가져오기
-    unsigned long cnaId = CAN.getCanId(); // CAN ID 얻기
+    unsigned long canId = CAN.getCanId(); // CAN ID 얻기
     Serial.print("\nData from ID : 0x");
-    Serial.println(cnaId,HEX); // 16진수로 ID 출력
+    Serial.println(canId,HEX); // 16진수로 ID 출력
     for(int i=0;i<len;i++){
         Serial.print(buf[i]);
         Serial.print("\t");
