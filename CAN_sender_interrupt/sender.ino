@@ -3,6 +3,7 @@
 
 // spi cs핀 연결 포트 : 10
 MCP_CAN CAN(10);
+int btn_pin = 7;
 
 void setup(){
     Serial.begin(9600);
@@ -14,6 +15,9 @@ void setup(){
 
     // 2번 핀 인터럽트 설정(falling 때), 인터럽트 들어오면 CAN_int 함수 실행
     attachInterrupt(digitalPinToInterrupt(2),CAN_int,FALLING);
+
+    // 7번 핀 INPUT MODE로 설정
+    pinMode(btn_pin,INPUT);
 }
 
 void CAN_int(){
@@ -32,8 +36,13 @@ void CAN_int(){
 }
 
 void loop(){
-    Serial.println("Sending");
+    
     unsigned char stmp[8] = {7,6,5,4,3,2,1,0};
-    CAN.sendMsgBuf(0x11,0,8,stmp); // 데이터 전송
-    delay(1700); // 1.7초마다 전송
+    if(digitalRead(btn_pin) == HIGH){
+        Serial.println("Sending(from left)");
+        CAN.sendMsgBuf(0x11,0,8,stmp); // 데이터 전송
+        delay(1000);
+    }
+    
+     // delay(1700); // 1.7초마다 전송
 }
