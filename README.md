@@ -118,7 +118,8 @@ MCP2515 CAN Controller와 물리적 CAN Bus 사이의 인터페이스처럼 동�
 
 <p align="center"><img src="./img/MCP2515_SCHEMETIC2.jpg"></p>
 
-5.3 회로도 구성하기(with Arduino UNO)
+### 5.3 회로도 구성하기(with Arduino UNO)
+
 CAN Controller IC 칩이 MCU와 SPI 통신을 사용해 연결되기 떄문에, 아두이노의 SCK, SI, SO, CS핀을 연결해 주어야 한다.
 
 <p align="center"><img src="./img/MCP2515_CIRCUIT.jpg"></p>
