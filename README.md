@@ -525,3 +525,7 @@ unsigned char data[8] = {0,1,2,3,4,5,6,7};
 <hr/>
 
 ### 구동 화면
+
+<p align="center"><img src="https://user-images.githubusercontent.com/65789048/171119797-f8638786-f1fb-4c16-a5bd-96e7603ad211.gif"></p>
+
+<hr/>
