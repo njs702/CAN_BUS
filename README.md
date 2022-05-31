@@ -195,3 +195,219 @@ ifconfig
 
 <p align="center"><img src="./img/can_ifconfig_result.PNG"></p>
 
+```
+sudo ip link set can0 up type can bitrate 500000
+```
+can0 인터페이스를 같은 속도로 맞춰줘야 한다.
+
+### 6.3 작동 원리
+
+#### 6.3.1 라즈베리파이
+1. 리눅스에서 제공하는 can 관련 헤더파일과 쓰레드 헤더파일 사용
+2. 2개의 추가 쓰레드 생성 후 사용(데이터 수신, 데이터 송신 전용)
+3. 순서 - can 소켓 생성, 송신 쓰레드 생성, 수신 쓰레드 생성(무한 루프)
+
+<hr/>
+
+헤더파일 선언
+```C
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#include <fcntl.h> // 파일 처리를 위한 헤더파일
+#include <unistd.h> // POSIX 운영체제 API 엑세스 제공 헤더파일
+
+#include <pthread.h> // 쓰레드 헤더파일
+#include <arpa/inet.h> // hton, ntoh , htons, ... etc
+
+#include <sys/socket.h> // socket, bind, listen, ...
+#include <sys/types.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h> // sockaddr_in 
+#include <net/if.h>
+
+#include <stdint.h>
+
+#include <linux/can.h>
+#include <linux/can/raw.h>
+
+#include <wiringPi.h> // GPIO 제어를 위한 헤더파일
+
+```
+
+<hr/>
+
+전역변수 선언
+```C
+int led_green = 23;
+int led_blue = 24;
+
+int btn_green = 20;
+int btn_blue = 21;
+
+/* ============== GLOBAL variables ============== */
+static int can_socket; // CAN socket
+static struct sockaddr_can addr;
+static struct ifreq ifr; // ifreq structure contaning the interface name
+/* ============================================== */
+```
+
+<hr/>
+
+CAN 소켓 생성 및 초기화, bind
+```C
+void init_bind_socket_can(){
+
+	/* ======================  Create Socket using 3 parameters ======================
+	domain/protocol family(PF_CAN), type of socket(raw or datagram),socket protocol */
+	if((can_socket=socket(PF_CAN,SOCK_RAW,CAN_RAW)) < 0){
+		perror("Socket");
+		return;
+	}
+
+	/* Retrieve the interface index for the interface name(can0, can1, vcan0, etc ... ) */
+	strcpy(ifr.ifr_name,"can0");
+
+	/* 네트워크 관리 스택 접근을 위한 I/O controll, 사용자 영역에서 커널 영역의 데이터 접근(system call) using 3 parameters
+	an open file descriptor(s), request code number(SIOCGIFINDEX), value */
+	ioctl(can_socket,SIOCGIFINDEX,&ifr);
+
+	// Bind Socket to the CAN interface
+	memset(&addr,0,sizeof(addr));
+	addr.can_family = AF_CAN;
+	addr.can_ifindex = ifr.ifr_ifindex;
+
+	if (bind(can_socket,(struct sockaddr *)&addr, sizeof(addr)) < 0){
+		perror("Bind");
+		return;
+	}
+
+	printf("CAN Socket creation & bind success!\n");
+}
+```
+
+<hr/>
+
+데이터 수신 쓰레드 함수 , ID에 따른 분기 처리
+```C
+void* thread_func(void* arg){
+    int nBytes;
+    int csock = *((int*)arg);
+    struct can_frame recieve_frame;
+
+    nBytes = read(csock,&recieve_frame,sizeof(struct can_frame));
+    if(nBytes < 0){
+        perror("Read");
+        return NULL;
+    }
+
+    switch(recieve_frame.can_id){
+        case 0x90:
+            printf("Green LED ON!\n");
+            printf("0x%2X {%d} ",recieve_frame.can_id,recieve_frame.can_dlc);
+            for(int i=0;i<recieve_frame.can_dlc;i++){
+                printf("%X ",recieve_frame.data[i]);
+            }
+            printf("\r\n");
+            digitalWrite(led_green,1);
+            delay(10);
+            digitalWrite(led_green,0);
+            break;
+
+        case 0x91:
+            printf("Blue LED ON!\n");
+            printf("0x%2X {%d} ",recieve_frame.can_id,recieve_frame.can_dlc);
+            for(int i=0;i<recieve_frame.can_dlc;i++){
+                printf("%X ",recieve_frame.data[i]);
+            }
+            printf("\r\n");
+            digitalWrite(led_blue,1);
+            delay(10);
+            digitalWrite(led_blue,0);
+            break;
+        default:
+            break;
+    }
+    
+}
+```
+
+<hr/>
+
+데이터 수신 쓰레드함수, id값을 설정하여 write한다.
+```C
+void* thread_send_func(void* arg){
+    int csock = *((int*)arg);
+    struct can_frame send_frame;
+
+    while(1){
+        // code 작성하기
+        if(digitalRead(btn_green)==1){
+            send_frame.can_id = 0x92;
+            send_frame.can_dlc = 8;
+            printf("Green button pushed!\n");
+            if(write(csock, &send_frame, sizeof(struct can_frame)) != sizeof(struct can_frame)){
+                perror("Write");
+                return NULL;           
+            }
+            delay(500);
+            continue;
+        }
+        if(digitalRead(btn_blue)==1){
+            printf("Blue button pushed!\n");
+            send_frame.can_id = 0x93;
+            send_frame.can_dlc = 8;
+            if(write(csock, &send_frame, sizeof(struct can_frame)) != sizeof(struct can_frame)){
+                perror("Write");
+                return NULL;           
+            }
+            delay(500);
+            continue;
+        }
+    }
+}
+```
+
+<hr/>
+
+메인 함수, 쓰레드 생성 및 소켓 초기화
+```C
+int main(){
+    
+    pthread_t thread;
+    pthread_t send_thread;
+
+    struct can_frame recieve_frame;
+	struct can_frame send_frame;
+
+    if(wiringPiSetupGpio()==-1){
+        perror("wiringPiSetup");
+        return 1;
+    }
+
+    init_bind_socket_can(); // 소켓 초기화
+
+    pinMode(led_green,OUTPUT);
+    pinMode(led_blue,OUTPUT);
+
+    pinMode(btn_green,INPUT);
+    pinMode(btn_blue,INPUT);
+
+    // 송신 전용 쓰레드 생성
+    pthread_create(&send_thread,NULL,thread_send_func,&can_socket);
+
+    // 무한 루프를 돌며 쓰레드를 사용해 데이터 수신
+    while(1){
+        pthread_create(&thread,NULL,thread_func,&can_socket);
+        //pthread_join(thread,NULL);
+    }
+
+
+    if (close(can_socket) < 0) {
+		perror("Close");
+		return 1;
+	}
+
+}
+```
