@@ -29,6 +29,32 @@ void CAN_INT(){
         digitalWrite(led_pin,LOW);
         break;
     
+    case 0x92:
+        Serial.print("\nData from ID : 0x");
+        Serial.println(canId,HEX); // 16진수로 ID 출력
+        for(int i=0;i<len;i++){
+            Serial.print(buf[i]);
+            Serial.print("\t");
+        }
+        Serial.print("\n");
+        digitalWrite(led_pin,HIGH);
+        delay(1000);
+        digitalWrite(led_pin,LOW);
+        break;
+    
+    case 0x93:
+        Serial.print("\nData from ID : 0x");
+        Serial.println(canId,HEX); // 16진수로 ID 출력
+        for(int i=0;i<len;i++){
+            Serial.print(buf[i]);
+            Serial.print("\t");
+        }
+        Serial.print("\n");
+        digitalWrite(led_pin,HIGH);
+        delay(1000);
+        digitalWrite(led_pin,LOW);
+        break;
+    
     default:
         break;
     }
