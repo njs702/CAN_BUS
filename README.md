@@ -151,7 +151,7 @@ CAN Controller와 CAN Tranceiver는 TxD, RxD wire로 통신한다.
 
 라즈베리파이의 GPIO 핀과 아두이노의 핀맵에서는 내장 CAN-Bus를 가지고 있지 않음. 하지만 SPI통신을 위한 내장 SPI-Bus를 가지고 있다(SCK, MOSI, MISO, CS ...). 또한 필요한 경우에 Interrupt 처리를 위한 핀 역시 내장하고 있음.
 
-<p align="center"><img src="./img/SPI_principle.png"></p>
+<p align="center"><img src="./img/SPI_principle.PNG"></p>
 
 #### 6.2.3 라즈베리파이 핀 구성도
 
