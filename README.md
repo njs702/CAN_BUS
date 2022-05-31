@@ -161,3 +161,37 @@ CAN Controller와 CAN Tranceiver는 TxD, RxD wire로 통신한다.
 > 사용 운영체제 - Raspberry Pi OS (32-bit) Bullseye
 
 최신 버전의 라즈비안에서는 mcp251x 모듈에 대한 지원을 하고 있다(리눅스 커널 접근 가능). 따라서 can 모듈을 다른 하드웨어처럼 direct로 로드해서 사용하면 된다.
+
+1. SPI / CAN Configuration
+
+```
+sudo nano /boot/config.txt
+```
+```
+sudo vim /boot/config.txt
+```
+
+2. 해당 내용 작성 (interrupt와 oscillator는 각자에 맞게 수정)
+
+```
+dtparam=spi=on
+```
+```
+dtoverlay=mcp2515-can0,oscillator=8000000,interrupt=25
+dtoverlay=spi0-hw-cs
+```
+
+3. 테스트하기
+```
+dmesg | grep -i spi
+```
+```
+dmesg | grep -i can
+```
+```
+ifconfig
+```
+라즈베리파이에서는 CAN통신을 하나의 네트워크로 인식하기 때문에, ifconfig로 확인 가능하다.
+
+<p align="center"><img src="./img/can_ifconfig_result.PNG"></p>
+
