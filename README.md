@@ -123,3 +123,41 @@ MCP2515 CAN Controller와 물리적 CAN Bus 사이의 인터페이스처럼 동�
 CAN Controller IC 칩이 MCU와 SPI 통신을 사용해 연결되기 떄문에, 아두이노의 SCK, SI, SO, CS핀을 연결해 주어야 한다.
 
 <p align="center"><img src="./img/MCP2515_CIRCUIT.jpg"></p>
+
+## 6. MCP2515 사용해서 3대의 단말 통신하기 with 2 Arduino Uno & RPi4
+
+### 6.1 시스템 구성도
+
+<p align="center"><img src="./img/can_3bus_architecture.PNG"></p>
+
+### 6.2 라즈베리파이 및 아두이노 초기 설정 (중요)
+
+#### 6.2.1 라즈베리파이의 CAN 통신
+라즈베리파이에서는 기본적으로 CAN통신을 위한 준비가 되어있지 않다(Raspberry Pi boards aren't ready out-of-the-box for CAN.). 라즈베리파이의 GPIO에서는 하드웨어적으로 CAN통신을 지원하지 않고, 라즈비안 운영체제는 소프트웨어적으로 CAN통신을 지원하지 않는다.
+
+> 하드웨어적인 제한을 해결하기 위해 SPI 통신을 사용하고, 소프트웨어적인 제한을 해결하기 위해 CAN Controller 모듈을 사용한다(mcp251x family).
+
+<p align="center"><img src="./img/CAN_principle.png"></p>
+
+* CAN Controller - SPI통신을 통해 마이크로컨트롤러의 통신 인터페이스 형성
+* CAN Tranceiver - CAN Bus 레벨에서의 데이터 통신(send/receive)
+
+CAN Controller와 CAN Tranceiver는 TxD, RxD wire로 통신한다.
+
+* TxD - Transmit Data, 데이터 송신을 위한 선
+* RxD - Receive Data, 데이터 수신을 위한 선
+
+#### 6.2.2 SPI 통신을 사용하는 이유?
+
+라즈베리파이의 GPIO 핀과 아두이노의 핀맵에서는 내장 CAN-Bus를 가지고 있지 않음. 하지만 SPI통신을 위한 내장 SPI-Bus를 가지고 있다(SCK, MOSI, MISO, CS ...). 또한 필요한 경우에 Interrupt 처리를 위한 핀 역시 내장하고 있음.
+
+<p align="center"><img src="./img/SPI_principle.png"></p>
+
+#### 6.2.3 라즈베리파이 핀 구성도
+
+<p align="center"><img src="./img/Raspberry-PI-MCP2515-Pinout.jpg"></p>
+
+#### 6.2.4 라즈베리파이 소프트웨어 설정하기
+> 사용 운영체제 - Raspberry Pi OS (32-bit) Bullseye
+
+최신 버전의 라즈비안에서는 mcp251x 모듈에 대한 지원을 하고 있다(리눅스 커널 접근 가능). 따라서 can 모듈을 다른 하드웨어처럼 direct로 로드해서 사용하면 된다.

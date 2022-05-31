@@ -6,7 +6,7 @@ MCP_CAN CAN(10);
 int btn_pin = 7;
 
 void setup(){
-    Serial.begin(9600);
+    Serial.begin(115200);
     while(CAN_OK != CAN.begin(CAN_500KBPS,MCP_8MHz)){
         Serial.println("CAN BUS init Failed");
         delay(100);
@@ -27,7 +27,7 @@ void CAN_int(){
     CAN.readMsgBuf(&len,buf); // CAN 데이터 가져오기
     unsigned long cnaId = CAN.getCanId(); // CAN ID 얻기
     Serial.print("\nData from ID : 0x");
-    Serial.println(cnaId,HEX); // 16진수로 ID 출력
+    Serial.println(cnaId); // 16진수로 ID 출력
     for(int i=0;i<len;i++){
         Serial.print(buf[i]);
         Serial.print("\t");
