@@ -335,7 +335,7 @@ void* thread_func(void* arg){
 
 <hr/>
 
-데이터 수신 쓰레드함수, id값을 설정하여 write한다.
+데이터 송신 쓰레드함수, id값을 설정하여 write한다.
 ```C
 void* thread_send_func(void* arg){
     int csock = *((int*)arg);
@@ -411,3 +411,100 @@ int main(){
 
 }
 ```
+
+#### 6.3.2 아두이노
+아두이노에는 쓰레드가 존재하지 않기 때문에, 인터럽트를 사용해 데이터 수신을 관리한다. mcp2515의 인터럽트 핀을 사용하고자 하는 아두이노의 핀에 연결한다. 또한 CAN통신을 사용하기 위해서 "MCP2515-lib-master" 라이브러리를 추가한다.
+
+<hr/>
+
+헤더파일 및 전역변수 선언
+```CPP
+// 3대의 단말이 하나의 BUS LINE으로 통신하는 프로그램 연습
+
+#include <SPI.h>
+#include <mcp_can.h>
+
+MCP_CAN CAN(10);
+int led_pin = 7;
+int btn_pin = 6;
+```
+
+<hr/>
+
+인터럽트 발생 시 동작하는 함수 선언, id값에 따른 분기 처리
+```CPP
+void CAN_INT(){
+    unsigned char len = 0;
+    unsigned char buf[8];
+    
+
+    CAN.readMsgBuf(&len,buf); // CAN 데이터 가져오기
+    unsigned long canId = CAN.getCanId(); // CAN ID 얻기
+    switch (canId)
+    {
+    case 0x91:
+        Serial.print("\nData from ID : 0x");
+        Serial.println(canId,HEX); // 16진수로 ID 출력
+        for(int i=0;i<len;i++){
+            Serial.print(buf[i]);
+            Serial.print("\t");
+        }
+        Serial.print("\n");
+        digitalWrite(led_pin,HIGH);
+        delay(1000);
+        digitalWrite(led_pin,LOW);
+        break;
+    
+    case 0x92:
+        Serial.print("\nData from ID : 0x");
+        Serial.println(canId,HEX); // 16진수로 ID 출력
+        for(int i=0;i<len;i++){
+            Serial.print(buf[i]);
+            Serial.print("\t");
+        }
+        Serial.print("\n");
+        digitalWrite(led_pin,HIGH);
+        delay(1000);
+        digitalWrite(led_pin,LOW);
+        break;
+    
+    default:
+        break;
+    }
+    
+}
+```
+
+<hr/>
+
+setup 초기설정, 인터럽트 설정을 해 주어야 한다
+```CPP
+void setup(){
+    Serial.begin(115200);
+    pinMode(led_pin,OUTPUT);
+    pinMode(btn_pin,INPUT);
+    while(CAN_OK != CAN.begin(CAN_500KBPS,MCP_8MHz)){
+        Serial.println("CAN BUS init failed!");
+        delay(100);
+    }
+    Serial.println("CAN BUS init Success!");
+    // 2번 핀 인터럽트 설정(falling 때), 인터럽트 들어오면 CAN_int 함수 실행
+    attachInterrupt(digitalPinToInterrupt(2),CAN_INT,FALLING);
+}
+```
+
+<hr/>
+
+loop 함수 아두이노 동작 코딩, 버튼을 누를 때 데이터를 송신한다
+```CPP
+unsigned char data[8] = {0,1,2,3,4,5,6,7};
+    if(digitalRead(btn_pin)==HIGH){
+        CAN.sendMsgBuf(0x90,0,8,data);
+        Serial.println("Button pushed, Data send");
+        delay(1000);
+    }
+```
+
+<hr/>
+
+### 아두이노는 총 2대지만, 하나의 코드만 올려 놓았다. 보내는 데이터와 id값, 받는 id에 따른 분기 처리만 바꾸면 되기 때문이다. 적절하게, 사용에 맞게 해당 부분만 수정하면 된다. 자세한 방법은 소스 코드를 참고하면 된다.
