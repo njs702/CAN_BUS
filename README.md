@@ -535,3 +535,21 @@ unsigned char data[8] = {0,1,2,3,4,5,6,7};
  CAN2 source code - [CAN2 소스코드](https://github.com/njs702/CAN_BUS/blob/main/CAN_3BUS/CAN2/can2.ino)
 
  RPI4 source code - [RPi4 소스코드](https://github.com/njs702/RaspberryPi-Practice_Procject/blob/main/CAN_3BUS/can_3bus.c)
+
+## 8. CAN통신 인터페이스 기기를 활용해 실시간 데이터 모니터링하기
+
+### 사용 기기 : PCAN-USB 
+[상세 정보](https://www.peak-system.com/PCAN-USB.199.0.html?&L=1)
+
+<p align="center" ><img src="./img/PCAN-USB_Group_2014.jpg" width="500" height="500"></p>
+
+윈도우 시스템에서 CAN통신 인터페이스를 제공해 주고, 현재 버스에서 돌아다니는 데이터에 대한 정보(id, 8BYTE data, cycle time 등등..)를 GUI 환경에서 확인할 수 있게 해준다. 상세 사용법은 위의 링크에서 매뉴얼 참고.
+
+<p align="center" ><img src="./img/PCAN-VIEW1.PNG"></p>
+
+초기 인터페이스 설정 화면, 맞는 모드와 프리퀀스, 데이터 전송 속도 등을 설정한다.
+
+<p align="center" ><img src="./img/PCAN-VIEW2.PNG"></p>
+
+현재 CAN-BUS에서 돌아다니는 데이터 값을 모니터링 할 수 있다.
+

@@ -16,6 +16,20 @@ void CAN_INT(){
     unsigned long canId = CAN.getCanId(); // CAN ID 얻기
     switch (canId)
     {
+    
+    /* case 0x090:
+        Serial.print("\nData from ID : 0x");
+        Serial.println(canId,HEX); // 16진수로 ID 출력
+        for(int i=0;i<len;i++){
+            Serial.print(buf[i]);
+            Serial.print("\t");
+        }
+        Serial.print("\n");
+        digitalWrite(led_pin,HIGH);
+        delay(1000);
+        digitalWrite(led_pin,LOW);
+        break; */
+
     case 0x90:
         Serial.print("\nData from ID : 0x");
         Serial.println(canId,HEX); // 16진수로 ID 출력
@@ -79,6 +93,7 @@ void loop(){
     
     if(digitalRead(btn_pin)==HIGH){
         CAN.sendMsgBuf(0x91,0,8,data);
+        delay(10);
         CAN.sendMsgBuf(0x90,0,8,data);
         Serial.println("Button pushed, Data send");
         delay(1000);
